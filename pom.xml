@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+      IDENTITY of this project.
+      groupId    → your org namespace (same across all services)
+      artifactId → this specific project's name
+      version    → follows semantic versioning (major.minor.patch)
+      packaging  → "jar" because this is a library, not a runnable app
+  -->
+  <groupId>com.railways</groupId>
+  <artifactId>railway-common-lib</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <!--
+      WHY NOT spring-boot-starter-parent?
+
+      spring-boot-starter-parent does two things:
+        1. Manages dependency versions (we want this)
+        2. Configures executable JAR packaging (we DON'T want this)
+
+      common-lib is a plain library JAR, not a runnable app.
+      So we use spring-boot-dependencies in <dependencyManagement>
+      below — this gives us ONLY the version management (#1)
+      without the executable packaging (#2).
+  -->
+
+  <properties>
+    <java.version>21</java.version>
+    <maven.compiler.source>${java.version}</maven.compiler.source>
+    <maven.compiler.target>${java.version}</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Centralized versions — one place to update -->
+    <spring-boot.version>3.2.4</spring-boot.version>
+    <jjwt.version>0.12.5</jjwt.version>
+    <bucket4j.version>8.10.1</bucket4j.version>
+  </properties>
+
+  <!--
+      dependencyManagement imports Spring Boot's version catalog.
+
+      After this, when we write:
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-web</artifactId>
+          </dependency>
+
+      We don't need a <version> tag — Spring Boot's BOM
+      (Bill of Materials) already knows the right version
+      for every Spring-related dependency.
+
+      "BOM" = a POM that only contains version info, no code.
+      Think of it as a compatibility chart.
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+
+    <!--
+        spring-boot-starter-web
+        WHY: Our security filters, exception handler, and
+        ApiResponse all use Spring Web classes (HttpServletRequest,
+        ResponseEntity, @ControllerAdvice, etc.)
+
+        "provided" scope would mean "the service using me will
+        provide this". But we use default (compile) scope because
+        common-lib needs these classes to compile.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!--
+        spring-boot-starter-security
+        WHY: JwtAuthFilter extends OncePerRequestFilter,
+        SecurityContext, Authentication — all from Spring Security.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!--
+        spring-boot-starter-data-redis
+        WHY: Rate limiting stores request counts in Redis.
+        Token blacklisting uses Redis. Both are in common-lib
+        because every service needs rate limiting, and any service
+        might need to check if a token is blacklisted.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+
+    <!--
+        spring-kafka
+        WHY: Common Kafka config (producer/consumer factories)
+        and shared event DTOs live here. Every service that
+        publishes or consumes events uses the same setup.
+    -->
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
+    </dependency>
+
+    <!--
+        spring-boot-starter-validation
+        WHY: @NotBlank, @Email, @Size annotations on shared DTOs.
+        Validation logic shouldn't be hand-written — use the
+        standard Jakarta Validation API.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
+    <!--
+        JWT libraries (3 JARs — API + implementation + JSON parser)
+        WHY: JwtUtil lives in common-lib. Every service validates
+        tokens using these classes.
+
+        jjwt-api    → compile scope (your code calls these interfaces)
+        jjwt-impl   → runtime scope (implementation loaded at runtime)
+        jjwt-jackson → runtime scope (JSON parsing for JWT claims)
+
+        This separation follows Interface Segregation — your code
+        depends on the API, not the implementation.
+    -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-api</artifactId>
+      <version>${jjwt.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-impl</artifactId>
+      <version>${jjwt.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt-jackson</artifactId>
+      <version>${jjwt.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <!--
+        Bucket4j — rate limiting
+        WHY: RateLimitFilter in common-lib uses Bucket4j + Redis
+        to throttle requests. Every service gets rate limiting
+        out of the box.
+    -->
+    <dependency>
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j-core</artifactId>
+      <version>${bucket4j.version}</version>
+    </dependency>
+
+    <!--
+        Structured JSON logging
+        WHY: In production, logs must be machine-parseable (JSON),
+        not human-readable text. ELK stack, Datadog, CloudWatch —
+        all expect JSON logs. This encoder makes every log line
+        a JSON object with timestamp, level, message, correlation ID.
+    -->
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+      <version>7.4</version>
+    </dependency>
+
+    <!--
+        Lombok
+        WHY: Eliminates boilerplate — @Getter, @Setter, @Builder,
+        @Slf4j, @RequiredArgsConstructor. Every class in every
+        service uses these.
+    -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+          Maven compiler plugin
+          Explicitly set Java 21. Without this, Maven defaults
+          to Java 5 (yes, really).
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.12.1</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.30</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+
+      <!--
+          Maven source plugin
+          WHY: Packages your source code alongside the JAR.
+          When auth-service imports common-lib, your IDE can
+          show the actual source code (not decompiled bytecode)
+          when you Ctrl+Click into ApiResponse or JwtUtil.
+          Small thing, huge developer experience improvement.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!--
+
+      <distributionManagement>
+          <repository>
+              <id>github</id>
+              <url>https://maven.pkg.github.com/YOUR_USERNAME/railway-common-lib</url>
+          </repository>
+      </distributionManagement>
+
+      Then `mvn deploy` pushes the JAR to GitHub Packages
+      instead of just local .m2
+  -->
+
+</project>
