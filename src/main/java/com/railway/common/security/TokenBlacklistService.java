@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -15,7 +16,7 @@ import java.time.Instant;
 @ConditionalOnProperty(name = "spring.data.redis.host")
 public class TokenBlacklistService {
 
-  private final RedisTemplate<String, String> redisTemplate;
+  private final StringRedisTemplate redisTemplate;
 
   private static final String KEY_PREFIX = "auth:session-cutoff:";
 

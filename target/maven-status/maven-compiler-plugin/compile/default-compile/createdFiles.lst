@@ -3,6 +3,7 @@ com/railway/common/exception/UnauthorizedException.class
 com/railway/common/security/JwtAuthenticationFilter.class
 com/railway/common/exception/TooManyRequestsException.class
 com/railway/common/dto/ApiResponse$ApiResponseBuilder.class
+com/railway/common/security/TokenBlacklistService.class
 com/railway/common/exception/ForbiddenException.class
 com/railway/common/dto/ApiResponse.class
 com/railway/common/security/JwtUtil.class
@@ -15,4 +16,3 @@ com/railway/common/security/AuthPrincipal$AuthPrincipalBuilder.class
 com/railway/common/exception/BadRequestException.class
 com/railway/common/exception/ServiceException.class
 com/railway/common/exception/ConflictException.class
-com/railway/common/config/RedisConfig.class
