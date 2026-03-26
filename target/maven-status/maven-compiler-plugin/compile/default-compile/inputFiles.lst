@@ -1,3 +1,4 @@
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/config/RedisConfig.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/dto/ApiResponse.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BadRequestException.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BaseException.java

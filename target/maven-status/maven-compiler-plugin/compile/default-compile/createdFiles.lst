@@ -15,3 +15,4 @@ com/railway/common/security/AuthPrincipal$AuthPrincipalBuilder.class
 com/railway/common/exception/BadRequestException.class
 com/railway/common/exception/ServiceException.class
 com/railway/common/exception/ConflictException.class
+com/railway/common/config/RedisConfig.class

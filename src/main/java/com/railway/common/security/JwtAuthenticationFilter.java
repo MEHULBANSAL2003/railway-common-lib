@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Intercepts every HTTP request, checks for a JWT token,
@@ -46,6 +48,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtUtil jwtUtil;
+  private final Optional<TokenBlacklistService> blacklistService;
 
   /**
    * Core filter logic. Runs on EVERY request.
@@ -168,6 +171,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       String email = jwtUtil.extractEmail(token);
       String role = jwtUtil.extractRole(token);
       String type = jwtUtil.extractType(token);
+
+      if (blacklistService.isPresent()) {
+        Instant issuedAt = jwtUtil.extractAllClaims(token)
+          .getIssuedAt()
+          .toInstant();
+
+        if (blacklistService.get().isBlacklisted(type, id, issuedAt)) {
+          log.debug("Token blacklisted for {} id={}", type, id);
+          return;
+        }
+      }
 
       AuthPrincipal principal = AuthPrincipal.builder()
         .id(id)
