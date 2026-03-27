@@ -1,4 +1,5 @@
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/dto/ApiResponse.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/dto/PagedResponse.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BadRequestException.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BaseException.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/ConflictException.java
@@ -14,3 +15,5 @@
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/security/JwtAuthenticationFilter.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/security/JwtUtil.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/security/TokenBlacklistService.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/specification/GenericSpecification.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/util/PaginationUtil.java

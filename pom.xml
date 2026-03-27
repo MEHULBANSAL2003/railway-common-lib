@@ -173,6 +173,11 @@
       <version>${bucket4j.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
     <!--
         Structured JSON logging
         WHY: In production, logs must be machine-parseable (JSON),
@@ -196,6 +201,11 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+      <version>3.5.8</version>
     </dependency>
 
   </dependencies>
