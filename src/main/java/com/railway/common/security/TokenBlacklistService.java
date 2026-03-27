@@ -33,7 +33,11 @@ public class TokenBlacklistService {
   public void setCutoff(String ownerType, Long ownerId, Duration ttl) {
     try {
       String key = buildKey(ownerType, ownerId);
-      String cutoffTimestamp = String.valueOf(Instant.now().toEpochMilli());
+      // Use epoch seconds (not millis) to match JWT's iat precision.
+      // JWT iat is stored in seconds — using millis here would cause
+      // tokens issued in the same second as the cutoff to appear
+      // "before" the cutoff due to millisecond truncation.
+      String cutoffTimestamp = String.valueOf(Instant.now().getEpochSecond());
       redisTemplate.opsForValue().set(key, cutoffTimestamp, ttl);
       log.debug("Session cutoff set: {} → {}", key, cutoffTimestamp);
     } catch (Exception ex) {
@@ -65,7 +69,7 @@ public class TokenBlacklistService {
         return false;
       }
 
-      Instant cutoff = Instant.ofEpochMilli(Long.parseLong(cutoffStr));
+      Instant cutoff = Instant.ofEpochSecond(Long.parseLong(cutoffStr));
       return issuedAt.isBefore(cutoff);
     } catch (Exception ex) {
       // Redis is down — can't check blacklist.
