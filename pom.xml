@@ -271,4 +271,12 @@
       instead of just local .m2
   -->
 
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub MEHULBANSAL2003 Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/MEHULBANSAL2003/railway-common-lib</url>
+    </repository>
+  </distributionManagement>
+
 </project>
