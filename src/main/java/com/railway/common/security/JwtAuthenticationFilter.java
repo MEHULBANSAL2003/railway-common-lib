@@ -56,22 +56,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
    * FLOW:
    *   1. Extract token from "Authorization: Bearer xxx" header
    *   2. No token? → skip, let the request continue unauthenticated
-   *   3. Has token? → validate it
-   *   4. Invalid? → skip, request continues unauthenticated
-   *   5. Valid? → create Authentication object, set SecurityContext
-   *   6. Continue to next filter
+   *      (Spring Security handles public vs protected endpoint distinction)
+   *   3. Has token but invalid/expired? → write 401 immediately, stop chain
+   *   4. Has token, valid, already authenticated? → skip
+   *   5. Valid token → attempt to set SecurityContext (includes blacklist check)
+   *   6. Blacklisted? → write 401 immediately, stop chain
+   *   7. All good → continue to next filter
    *
-   * WHY "skip" instead of "reject" for invalid tokens?
-   *   Because this filter doesn't know if the endpoint is public.
-   *   /api/auth/login doesn't need a token. If we rejected here,
-   *   login would break. Instead, we just don't set the SecurityContext.
-   *   Later, Spring Security's authorization layer checks:
-   *     - Endpoint is public? → allow (no SecurityContext needed)
-   *     - Endpoint is protected? → no SecurityContext? → 401
+   * WHY "skip" for no-token but "401" for bad-token?
+   *   No token = could be a public endpoint (login, register). We don't
+   *   know yet, so we let Spring Security's authorization layer decide.
    *
-   *   This is Separation of Concerns:
-   *     - This filter: "WHO is this?" (authentication)
-   *     - SecurityConfig: "CAN they access this?" (authorization)
+   *   Bad token = the client explicitly tried to authenticate and failed.
+   *   There's no scenario where a present-but-invalid token should proceed.
+   *   Writing 401 here is explicit and correct — we don't leave it to
+   *   Spring Security, which would otherwise treat the request as anonymous
+   *   and return 403 (AccessDeniedException) instead of 401.
    */
   @Override
   protected void doFilterInternal(
@@ -82,16 +82,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     // Step 1: Extract token from header
     String token = extractToken(request);
 
-    // Step 2: No token → skip
+    // Step 2: No token → skip, let Spring Security handle it
     if (token == null) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    // Step 3: Validate token
+    // Step 3: Token present but invalid/expired → 401 immediately
     if (!jwtUtil.validateToken(token)) {
-      // Invalid/expired token → skip (don't set context)
-      filterChain.doFilter(request, response);
+      sendUnauthorized(response, "Invalid or expired token");
       return;
     }
 
@@ -102,10 +101,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
 
-    // Step 5: Build Authentication object and set SecurityContext
-    setSecurityContext(token, request);
+    // Step 5 & 6: Build Authentication object and set SecurityContext.
+    // Returns false if token is blacklisted → 401 immediately.
+    boolean contextSet = setSecurityContext(token, request);
+    if (!contextSet) {
+      sendUnauthorized(response, "Token has been revoked");
+      return;
+    }
 
-    // Step 6: Continue to next filter
+    // Step 7: Continue to next filter
     filterChain.doFilter(request, response);
   }
 
@@ -137,6 +141,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   /**
+   * Writes a 401 Unauthorized JSON response and stops the filter chain.
+   *
+   * WHY write directly to the response here?
+   *   Once we know the token is bad, there's nothing downstream that
+   *   can help. Writing 401 here short-circuits the chain cleanly,
+   *   rather than letting Spring Security misinterpret the situation
+   *   as an anonymous request and return 403 instead.
+   *
+   * IMPORTANT: Do NOT call filterChain.doFilter() after this method.
+   */
+  private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
+    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401
+    response.setContentType("application/json");
+    response.getWriter().write("{\"error\": \"" + message + "\"}");
+  }
+
+  /**
    * Creates an Authentication object and sets it in SecurityContext.
    *
    * WHAT IS SecurityContext?
@@ -164,8 +185,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
    *     principal.getId()    → 1
    *     principal.getType()  → "admin"
    *     principal.getRole()  → "SUPER_ADMIN"
+   *
+   * RETURNS:
+   *   true  → context set successfully, request may proceed
+   *   false → token is blacklisted or an error occurred; caller must 401
    */
-  private void setSecurityContext(String token, HttpServletRequest request) {
+  private boolean setSecurityContext(String token, HttpServletRequest request) {
     try {
       Long id = jwtUtil.extractId(token);
       String email = jwtUtil.extractEmail(token);
@@ -179,7 +204,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (blacklistService.get().isBlacklisted(type, id, issuedAt)) {
           log.debug("Token blacklisted for {} id={}", type, id);
-          return;
+          return false;
         }
       }
 
@@ -200,11 +225,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       SecurityContextHolder.getContext().setAuthentication(authentication);
 
       log.debug("Authenticated {} (id={}, role={})", type, id, role);
+      return true;
 
     } catch (Exception ex) {
       log.warn("Failed to set security context: {}", ex.getMessage());
-      // Don't throw — just leave SecurityContext empty.
-      // Protected endpoints will return 401 automatically.
+      // Don't throw — return false so caller sends 401.
+      return false;
     }
   }
 }
