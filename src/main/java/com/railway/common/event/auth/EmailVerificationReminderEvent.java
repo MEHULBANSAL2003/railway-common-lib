@@ -7,5 +7,6 @@ public record EmailVerificationReminderEvent(
   String userId,
   String email,
   String fullName,
+  String correlationId,
   Instant triggeredAt
 ) {}
