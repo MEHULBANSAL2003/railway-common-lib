@@ -1,5 +1,6 @@
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/dto/ApiResponse.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/dto/PagedResponse.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/event/auth/EmailVerificationReminderEvent.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BadRequestException.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BaseException.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/ConflictException.java
@@ -11,6 +12,7 @@
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/UnauthorizedException.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/filter/CorrelationIdFilter.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/filter/CorrelationIdInterceptor.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/kafka/KafkaTopics.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/security/AuthPrincipal.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/security/JwtAuthenticationFilter.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/security/JwtUtil.java

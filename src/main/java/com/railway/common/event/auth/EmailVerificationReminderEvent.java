@@ -6,6 +6,6 @@ import java.time.Instant;
 public record EmailVerificationReminderEvent(
   String userId,
   String email,
-  String name,
+  String fullName,
   Instant triggeredAt
 ) {}
