@@ -12,6 +12,10 @@ public final class KafkaTopics {
 
     public static final String EMAIL_VERIFICATION_REMINDER = "auth.email.verification.reminder";
 
+    public static final String ACCOUNT_DELETION_REQUEST = "auth.account.deletion.request";
+
+    public static final String ACCOUNT_DELETION = "auth.account.deletion";
+
     public static final String PASSWORD_CHANGED = "auth.user.password.changed";
   }
 
