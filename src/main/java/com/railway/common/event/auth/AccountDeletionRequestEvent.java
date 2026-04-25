@@ -7,5 +7,6 @@ public record AccountDeletionRequestEvent (
   String email,
   String fullName,
   String correlationId,
-  Instant triggeredAt
+  Instant triggeredAt,
+  Integer recoverPeriod
 ){}

@@ -1,5 +1,8 @@
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/dto/ApiResponse.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/dto/PagedResponse.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/event/auth/AccountDeletionEvent.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/event/auth/AccountDeletionRequestEvent.java
+/Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/event/auth/EmailEvent.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/event/auth/EmailVerificationReminderEvent.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BadRequestException.java
 /Users/astrotalk/Sites/railways/railway-backend/railway-common-lib/src/main/java/com/railway/common/exception/BaseException.java

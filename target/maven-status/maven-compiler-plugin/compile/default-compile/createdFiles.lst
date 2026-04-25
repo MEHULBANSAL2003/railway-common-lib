@@ -1,5 +1,7 @@
 com/railway/common/security/JwtAuthenticationFilter.class
+com/railway/common/event/auth/EmailEvent.class
 com/railway/common/specification/GenericSpecification$FilterCriteria.class
+com/railway/common/event/auth/AccountDeletionRequestEvent.class
 com/railway/common/dto/ApiResponse$ApiResponseBuilder.class
 com/railway/common/kafka/KafkaTopics$Auth.class
 com/railway/common/security/TokenBlacklistService.class
@@ -27,3 +29,4 @@ com/railway/common/security/AuthPrincipal$AuthPrincipalBuilder.class
 com/railway/common/exception/BadRequestException.class
 com/railway/common/exception/ServiceException.class
 com/railway/common/exception/ConflictException.class
+com/railway/common/event/auth/AccountDeletionEvent.class
